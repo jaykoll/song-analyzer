@@ -87,6 +87,7 @@ This will use 8 threads for processing, which can significantly speed up the ana
 - Determines the musical key and its Camelot notation
 - Calculates track duration
 - Supports multi-threaded processing for faster analysis of multiple files
+- Option to organize tracks into subdirectories based on Camelot keys
 
 ## Requirements
 
