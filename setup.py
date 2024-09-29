@@ -6,18 +6,18 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="song-analyzer",
     version="1.0.0",
-    author="Your Name",
-    author_email="your.email@example.com",
+    author="Jatin Kolluru",
+    author_email="jatinkolluru@gmail.com",
     description="A CLI tool for analyzing audio files",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/song-analyzer",
+    url="https://github.com/jatinkolluru/song-analyzer",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     install_requires=[
         "librosa",
         "numpy",
-        "click",
+        "click",    
         "tabulate",
     ],
     classifiers=[
