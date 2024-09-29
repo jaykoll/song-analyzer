@@ -1,54 +1,25 @@
 import librosa
 import numpy as np
+from functools import lru_cache
 
-def get_bpm(audio_file):
-    try:
-        # Load audio file
-        y, sr = librosa.load(audio_file)
+@lru_cache(maxsize=None)
+def load_audio(audio_file):
+    return librosa.load(audio_file)
 
-        # Get bpm
-        tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
+def get_bpm(y, sr):
+    tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
+    return tempo
 
-        return tempo
-    except librosa.util.exceptions.ParameterError as pe:
-        print(f"Error loading audio file: {str(pe)}")
-        raise  # Re-raise the exception to stop further processing
-    except Exception as e:
-        print(f"Error analyzing the track: {str(e)}")
-        raise
+def get_root_note(y, sr):
+    chromagram = librosa.feature.chroma_stft(y=y, sr=sr)
+    root_pitch_class = np.argmax(np.mean(chromagram, axis=1))
+    chroma_to_key = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+    estimated_key = chroma_to_key[root_pitch_class]
+    camelot = midi_to_camelot(root_pitch_class)
+    return estimated_key, camelot
 
-def get_root_note(audio_file):
-    try:
-        # Load the audio file using librosa
-        y, sr = librosa.load(audio_file)
-
-        # Calculate chromagram
-        chromagram = librosa.feature.chroma_stft(y=y, sr=sr)
-
-        # Find the most prominent pitch class
-        root_pitch_class = np.argmax(np.mean(chromagram, axis=1))
-
-        # Define key mappings
-        chroma_to_key = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-        
-        # Find the key by selecting the maximum chroma feature
-        estimated_key = chroma_to_key[root_pitch_class]
-
-        # Convert to Camelot value
-        camelot = midi_to_camelot(root_pitch_class)
-        return estimated_key, camelot
-    except Exception as e:
-        print(f"Error analyzing the root note: {str(e)}")
-        raise
-
-def get_track_length(audio_file):
-    try:
-        # Get track duration
-        duration = librosa.get_duration(path=audio_file)
-        return duration
-    except Exception as e:
-        print(f"Error getting track length: {str(e)}")
-        raise
+def get_track_length(y, sr):
+    return librosa.get_duration(y=y, sr=sr)
 
 def get_camelot_key_from_root(root_note):
     # Map note name to Camelot key
@@ -78,66 +49,78 @@ def midi_to_camelot(midi_note):
 #################################################################################
 # Beta Functions - Coming Soon!                
 #################################################################################
-# def get_beat_locations(audio_file):
-#     try:
-#         # Load audio file
-#         y, sr = librosa.load(audio_file)
+def get_beat_locations(audio_file):
+    try:
+        # Load audio file
+        y, sr = librosa.load(audio_file)
 
-#         # Get beat locations
-#         _, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
-#         beat_locations = librosa.frames_to_time(beat_frames, sr=sr)
+        # Get beat locations
+        _, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
+        beat_locations = librosa.frames_to_time(beat_frames, sr=sr)
 
-#         return beat_locations
-#     except Exception as e:
-#         print(f"Error extracting beat locations: {str(e)}")
-#         raise
+        return beat_locations
+    except Exception as e:
+        print(f"Error extracting beat locations: {str(e)}")
+        raise
 
-# def get_onset_envelopes(audio_file):
-#     try:
-#         # Load audio file
-#         y, sr = librosa.load(audio_file)
+def get_onset_envelopes(audio_file):
+    try:
+        # Load audio file
+        y, sr = librosa.load(audio_file)
 
-#         # Get onset envelopes
-#         onset_env = librosa.onset.onset_strength(y=y, sr=sr)
+        # Get onset envelopes
+        onset_env = librosa.onset.onset_strength(y=y, sr=sr)
 
-#         return onset_env
-#     except Exception as e:
-#         print(f"Error extracting onset envelopes: {str(e)}")
-#         raise
+        return onset_env
+    except Exception as e:
+        print(f"Error extracting onset envelopes: {str(e)}")
+        raise
 
-# def get_tempo_changes(audio_file):
-#     try:
-#         # Load audio file
-#         y, sr = librosa.load(audio_file)
+def get_tempo_changes(audio_file):
+    try:
+        # Load audio file
+        y, sr = librosa.load(audio_file)
 
-#         # Get tempo changes
-#         onset_env = librosa.onset.onset_strength(y=y, sr=sr)
-#         tempo, _ = librosa.beat.beat_track(onset_envelope=onset_env, sr=sr, trim=False)
+        # Get tempo changes
+        onset_env = librosa.onset.onset_strength(y=y, sr=sr)
+        tempo, _ = librosa.beat.beat_track(onset_envelope=onset_env, sr=sr, trim=False)
 
-#         return tempo
-#     except Exception as e:
-#         print(f"Error extracting tempo changes: {str(e)}")
-#         raise
+        return tempo
+    except Exception as e:
+        print(f"Error extracting tempo changes: {str(e)}")
+        raise
 
-# def get_key_changes(audio_file):
-#     try:
-#         # Load audio file
-#         y, sr = librosa.load(audio_file)
+def get_key_changes(audio_file):
+    try:
+        # Load audio file
+        y, sr = librosa.load(audio_file)
 
-#         # Calculate chromagram
-#         chromagram = librosa.feature.chroma_stft(y=y, sr=sr)
+        # Calculate chromagram
+        chromagram = librosa.feature.chroma_stft(y=y, sr=sr)
 
-#         # Sum the chroma features to get key changes
-#         key_changes = np.sum(chromagram, axis=1)
+        # Sum the chroma features to get key changes
+        key_changes = np.sum(chromagram, axis=1)
 
-#         # Get the index of the maximum key change
-#         key_index = np.argmax(key_changes)
+        # Get the index of the maximum key change
+        key_index = np.argmax(key_changes)
 
-#         # Get the corresponding key name
-#         key_name = librosa.midi_to_note(key_index)
+        # Get the corresponding key name
+        key_name = librosa.midi_to_note(key_index)
 
-#         return key_name
-#     except Exception as e:
-#         print(f"Error extracting key changes: {str(e)}")
-#         raise
+        return key_name
+    except Exception as e:
+        print(f"Error extracting key changes: {str(e)}")
+        raise
 #################################################################################
+
+def analyze_track(audio_file):
+    try:
+        y, sr = load_audio(audio_file)
+        return {
+            'bpm': get_bpm(y, sr),
+            'root_note': get_root_note(y, sr),
+            'duration': get_track_length(y, sr)
+        }
+    except Exception as e:
+        print(f"Error analyzing {audio_file}: {str(e)}")
+        return None
