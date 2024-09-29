@@ -14,71 +14,41 @@ pip install song-analyzer
 
 After installation, you can use the `song-analyzer` command directly:
 
-### Analyze a single file:
+### Analyze all tracks in the current directory:
 
 ```
-song-analyzer analyze /path/to/your/audio/file.mp3
+song-analyzer
 ```
 
-or
+### Analyze and organize tracks in the current directory:
 
 ```
-song-analyzer analyze-playlist /path/to/your/audio/directory --threads 8
+song-analyzer --organize
 ```
 
-### Analyze individual .mp3 or .wav files:
-```
-python main.py analyze /path/to/your/audio/file.mp3
-```
-
-Example output:
-```
-Welcome to the song-analyzer!
-Analysis for /path/to/your/audio/file.mp3:
-  Track Name: file.mp3
-  Key: ('E', '5A')
-  BPM: 129.20
-  Duration: 8min 22s
-```
-
-### Analyze entire directory containing .mp3 or .wav files:
-```
-python main.py analyze-playlist /path/to/your/audio/directory
-```
-
-Example output:
-```
-Welcome to the song-analyzer!
-+-------------------------+--------------+---------+------------+
-| Track Name              | Key          |     BPM | Duration   |
-+=========================+==============+=========+============+
-| dreamcatcher.mp3        | ('B', '12B') | 129.199 | 7min 45s   |
-+-------------------------+--------------+---------+------------+
-| test.mp3                | ('E', '5A')  | 129.199 | 8min 22s   |
-+-------------------------+--------------+---------+------------+
-| presto-you-are-mine.mp3 | ('G', '8A')  | 198.768 | 9min 15s   |
-+-------------------------+--------------+---------+------------+
-```
-
-### Analyze and organize files by Camelot key:
-
-You can use the `--organize` flag to automatically move tracks into subdirectories based on their Camelot keys:
+### Analyze a specific file:
 
 ```
-python main.py analyze-playlist /path/to/your/audio/directory --threads 8 --organize
+song-analyzer path/to/your/audio/file.mp3
 ```
 
-This command will analyze all tracks in the directory, display the analysis results in a table, and organize the tracks into subdirectories named after their Camelot keys.
-
-### Using multiple threads for faster processing:
-
-You can use the `--threads` option to specify the number of threads for parallel processing:
+### Analyze all tracks in a specific directory:
 
 ```
-python main.py analyze-playlist /path/to/your/audio/directory --threads 8
+song-analyzer path/to/your/audio/directory
 ```
 
-This will use 8 threads for processing, which can significantly speed up the analysis of large directories.
+### Analyze and organize tracks in a specific directory:
+
+```
+song-analyzer path/to/your/audio/directory --organize
+```
+
+### Specify the number of threads for processing:
+
+```
+song-analyzer --threads 8
+```
 
 ## Features
 
