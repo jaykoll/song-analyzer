@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="song-analyzer",
-    version="1.0.0",
+    version="1.0.1",
     author="Jatin Kolluru",
     author_email="jatinkolluru@gmail.com",
     description="A CLI tool for analyzing audio files",

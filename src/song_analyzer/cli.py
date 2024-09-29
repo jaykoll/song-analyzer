@@ -19,22 +19,21 @@ def analyze_and_format(file_path):
     result = analyze_track(file_path)
     if result:
         return {
+            'file_path': file_path,
             'Track Name': os.path.basename(file_path),
             'Key': f"{result['root_note'][0]} ({result['root_note'][1]})",
             'BPM': f"{result['bpm']:.2f}",
-            'Duration': format_duration(result['duration'])
+            'Duration': format_duration(result['duration']),
+            'raw_result': result
         }
     return None
 
-def organize_track(file_path, result, base_dir):
-    if result and 'root_note' in result:
-        camelot_key = result['root_note'][1]
-        target_dir = os.path.join(base_dir, camelot_key)
-        os.makedirs(target_dir, exist_ok=True)
-        new_path = os.path.join(target_dir, os.path.basename(file_path))
-        shutil.move(file_path, new_path)
-        return f"Moved {os.path.basename(file_path)} to {camelot_key}/"
-    return None
+def organize_track(file_path, camelot_key, base_dir):
+    target_dir = os.path.join(base_dir, camelot_key)
+    os.makedirs(target_dir, exist_ok=True)
+    new_path = os.path.join(target_dir, os.path.basename(file_path))
+    shutil.move(file_path, new_path)
+    return f"Moved {os.path.basename(file_path)} to {camelot_key}/"
 
 @click.command()
 @click.argument('path', type=click.Path(exists=True), required=False)
@@ -48,7 +47,12 @@ def cli(path, organize, threads):
         if result:
             click.echo(f"Analysis for {path}:")
             for key, value in result.items():
-                click.echo(f"  {key}: {value}")
+                if key not in ['file_path', 'raw_result']:
+                    click.echo(f"  {key}: {value}")
+            if organize:
+                camelot_key = result['raw_result']['root_note'][1]
+                organize_message = organize_track(path, camelot_key, os.path.dirname(path))
+                click.echo(organize_message)
         else:
             click.echo(f"Failed to analyze {path}", err=True)
     else:
@@ -58,6 +62,8 @@ def cli(path, organize, threads):
                        for root, _, files in os.walk(directory) 
                        for file in files if file.lower().endswith(('.mp3', '.wav'))]
 
+        click.echo(f"Found {len(audio_files)} audio files. Starting analysis...")
+
         tracks_info = []
         with ThreadPoolExecutor(max_workers=threads) as executor:
             future_to_file = {executor.submit(analyze_and_format, file): file for file in audio_files}
@@ -66,23 +72,29 @@ def cli(path, organize, threads):
                 result = future.result()
                 if result:
                     tracks_info.append(result)
+                    click.echo(f"Analyzed: {os.path.basename(file_path)}")
                     if organize:
-                        organize_message = organize_track(file_path, result, directory)
-                        if organize_message:
-                            click.echo(organize_message)
+                        camelot_key = result['raw_result']['root_note'][1]
+                        organize_message = organize_track(file_path, camelot_key, directory)
+                        click.echo(organize_message)
+                else:
+                    click.echo(f"Failed to analyze: {os.path.basename(file_path)}", err=True)
 
         if tracks_info:
+            click.echo("\nAnalysis complete. Generating summary table...")
             tracks_info.sort(key=lambda x: (x['Key'], x['Track Name']))
             headers = ['Track Name', 'Key', 'BPM', 'Duration']
-            table = tabulate([info.values() for info in tracks_info], headers=headers, tablefmt='grid')
+            table_data = [[info[k] for k in headers] for info in tracks_info]
+            table = tabulate(table_data, headers=headers, tablefmt='grid')
             click.echo(table)
+
+            if organize:
+                click.echo("\nAll tracks have been organized into subdirectories based on their Camelot keys.")
         else:
             click.echo("No tracks were successfully analyzed.", err=True)
 
-        if organize:
-            click.echo("Tracks have been organized into subdirectories based on their Camelot keys.")
-        else:
-            click.echo("Tracks were analyzed but not organized. Use --organize flag to move files into Camelot key subdirectories.")
+        if not organize:
+            click.echo("\nTracks were analyzed but not organized. Use --organize flag to move files into Camelot key subdirectories.")
 
 if __name__ == '__main__':
     cli()
