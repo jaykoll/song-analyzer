@@ -1,1 +1,0 @@
-print("Welcome to the song-analyzer!")

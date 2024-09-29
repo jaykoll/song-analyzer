@@ -1,20 +1,30 @@
 # song-analyzer
-MP3 and WAV file analyzer for audio mixing/production
+
+A CLI tool for analyzing audio files (MP3 and WAV) to extract information such as BPM, key, and duration.
 
 ## Installation
 
-1. Clone this repository:
-   ```
-   git clone https://github.com/yourusername/song-analyzer.git
-   cd song-analyzer
-   ```
+You can install song-analyzer directly from PyPI:
 
-2. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+```
+pip install song-analyzer
+```
 
 ## Usage
+
+After installation, you can use the `song-analyzer` command directly:
+
+### Analyze a single file:
+
+```
+song-analyzer analyze /path/to/your/audio/file.mp3
+```
+
+or
+
+```
+song-analyzer analyze-playlist /path/to/your/audio/directory --threads 8
+```
 
 ### Analyze individual .mp3 or .wav files:
 ```
@@ -49,6 +59,16 @@ Welcome to the song-analyzer!
 | presto-you-are-mine.mp3 | ('G', '8A')  | 198.768 | 9min 15s   |
 +-------------------------+--------------+---------+------------+
 ```
+
+### Analyze and organize files by Camelot key:
+
+You can use the `--organize` flag to automatically move tracks into subdirectories based on their Camelot keys:
+
+```
+python main.py analyze-playlist /path/to/your/audio/directory --threads 8 --organize
+```
+
+This command will analyze all tracks in the directory, display the analysis results in a table, and organize the tracks into subdirectories named after their Camelot keys.
 
 ### Using multiple threads for faster processing:
 
